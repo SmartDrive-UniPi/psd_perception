@@ -18,7 +18,6 @@ struct Cone {
 class ConeFilterNode : public rclcpp::Node {
 public:
     ConeFilterNode() : Node("cone_filter_node") {
-        // Parameters (to make them configurable from launch file or command line)
         this->declare_parameter<std::string>("inner_cones_file", "/home/ubuntu/psd_ws/src/psd_gazebo_worlds/world/track_csv/track_inner.csv");
         this->declare_parameter<std::string>("outer_cones_file", "/home/ubuntu/psd_ws/src/psd_gazebo_worlds/world/track_csv/track_outer.csv");
 
