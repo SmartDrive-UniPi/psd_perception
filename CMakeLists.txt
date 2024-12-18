@@ -14,12 +14,25 @@ find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(custom_msgs REQUIRED)
 find_package(tinyxml2 REQUIRED)  # TinyXML-2
+find_package(yaml-cpp REQUIRED)
 
 # Declare your node as an executable
 add_executable(fake_perception src/fake_perception.cpp)  # Adjust if using a different name
+add_executable(new_fake_perception src/new_fake_perception.cpp)  # Adjust if using a different name
 
 # Specify dependencies in ament_target_dependencies
 ament_target_dependencies(fake_perception
+  rclcpp
+  geometry_msgs
+  visualization_msgs
+  std_msgs
+  tf2
+  tf2_geometry_msgs
+  custom_msgs
+  yaml-cpp
+)
+
+ament_target_dependencies(new_fake_perception
   rclcpp
   geometry_msgs
   visualization_msgs
@@ -31,13 +44,21 @@ ament_target_dependencies(fake_perception
 
 # Link TinyXML-2 library
 target_link_libraries(fake_perception
+  tinyxml2::tinyxml2 yaml-cpp::yaml-cpp
+)
+
+target_link_libraries(new_fake_perception
   tinyxml2::tinyxml2
 )
 
 # Install the node
-install(TARGETS fake_perception
+install(TARGETS fake_perception new_fake_perception
   DESTINATION lib/${PROJECT_NAME}
 )
+
+install(FILES
+  config/params.yaml
+  DESTINATION share/${PROJECT_NAME}/config)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
