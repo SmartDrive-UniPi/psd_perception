@@ -1,71 +1,85 @@
 cmake_minimum_required(VERSION 3.8)
 project(psd_perception)
 
+if(POLICY CMP0144)
+  cmake_policy(SET CMP0144 NEW)
+endif()
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# Find dependencies
+# Find ament and ROS2 dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(custom_msgs REQUIRED)
-find_package(tinyxml2 REQUIRED)  # TinyXML-2
-find_package(yaml-cpp REQUIRED)
+find_package(pcl_conversions REQUIRED)
+find_package(PCL REQUIRED COMPONENTS common io filters segmentation search)
+find_package(Eigen3 REQUIRED)
+find_package(OpenMP REQUIRED)
 
-# Declare your node as an executable
-add_executable(fake_perception src/fake_perception.cpp)  # Adjust if using a different name
-add_executable(new_fake_perception src/new_fake_perception.cpp)  # Adjust if using a different name
+include_directories(
+  include
+  ${PCL_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
+)
 
-# Specify dependencies in ament_target_dependencies
-ament_target_dependencies(fake_perception
+# Enable OpenMP if found
+if(OpenMP_CXX_FOUND)
+  message(STATUS "OpenMP found")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
+# -- STEREOCAMERA DEPTH NODE --
+add_executable(cone_detection_stereocam src/cone_detection_stereocam.cpp)
+ament_target_dependencies(
+  cone_detection_stereocam
   rclcpp
-  geometry_msgs
+  sensor_msgs
   visualization_msgs
-  std_msgs
-  tf2
-  tf2_geometry_msgs
-  custom_msgs
-  yaml-cpp
+  pcl_conversions
+)
+target_link_libraries(cone_detection_stereocam
+  ${PCL_LIBRARIES}
+  OpenMP::OpenMP_CXX
+)
+target_compile_definitions(
+  cone_detection_stereocam
+  PUBLIC ${PCL_DEFINITIONS}
 )
 
-ament_target_dependencies(new_fake_perception
+# -- LIDAR NODE --
+add_executable(cone_detection_lidar src/cone_detection_lidar.cpp)
+ament_target_dependencies(
+  cone_detection_lidar
   rclcpp
-  geometry_msgs
+  sensor_msgs
   visualization_msgs
-  std_msgs
-  tf2
-  tf2_geometry_msgs
-  custom_msgs
+  pcl_conversions
 )
-
-# Link TinyXML-2 library
-target_link_libraries(fake_perception
-  tinyxml2::tinyxml2 yaml-cpp::yaml-cpp
+target_link_libraries(cone_detection_lidar
+  ${PCL_LIBRARIES}
+  OpenMP::OpenMP_CXX
 )
-
-target_link_libraries(new_fake_perception
-  tinyxml2::tinyxml2
+target_compile_definitions(
+  cone_detection_lidar
+  PUBLIC ${PCL_DEFINITIONS}
 )
-
-# Install the node
-install(TARGETS fake_perception new_fake_perception
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-install(FILES
-  config/params.yaml
-  DESTINATION share/${PROJECT_NAME}/config)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  # The following lines skip specific linters
-  set(ament_cmake_copyright_FOUND TRUE)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+# Install both executables
+install(
+  TARGETS
+    cone_detection_stereocam
+    cone_detection_lidar
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 ament_package()
+
