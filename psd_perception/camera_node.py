@@ -6,7 +6,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image, PointCloud2
 from psd_msgs.msg import ConePosition, ConePositionArrayStamped, ConeRangeBearing, ConeRangeBearingArrayStamped
 from geometry_msgs.msg import Point
-from std_msgs.msg import Header
+from std_msgs.msg import Header, Float64
 import sensor_msgs_py.point_cloud2 as pc2
 from rcl_interfaces.msg import ParameterDescriptor
 

@@ -855,8 +855,8 @@ class ConeDetectorNode(Node):
 				nanosec: 42062777
 			frame_id: lidar_onBoard_link
 
-		angle_min: -3.1413047313690186
-		angle_max: 3.139770984649658
+		angle_min: 0.0 (0)
+		angle_max: 6.27... (2pi)
 		angle_increment: 0.00196713930927217
 		time_increment: 3.0927240004530177e-05
 		scan_time: 0.09875067323446274
